@@ -1,0 +1,8 @@
+#ignoring large csvs
+/data
+
+#mac specific
+.DS_Store
+
+#vscode
+/.vscode
