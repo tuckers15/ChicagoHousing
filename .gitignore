@@ -4,5 +4,10 @@
 #mac specific
 .DS_Store
 
+#secrets
+secrets/
+
+
 #vscode
 /.vscode
+
