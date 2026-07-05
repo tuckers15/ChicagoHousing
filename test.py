@@ -22,7 +22,7 @@ Sample unmatched PINs  : ['17103180800000', '13224360020000', '14323110120000', 
 import pandas as pd
 import folium
 
-# Load your two raw fetched datasets
+# Load fetched datasets
 sales = pd.read_csv("data/raw_parcel_sales.csv")
 universe = pd.read_csv("data/raw_parcel_universe.csv")
 
