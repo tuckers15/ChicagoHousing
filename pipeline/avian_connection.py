@@ -149,43 +149,6 @@ def test_engine(sql_engine):
         print (results)
     
 
-
-# Abandoned the below function due to errors related to indexing. Go forward solution is to hardcode and create the target
-# table, along with its indexes, before loading the dataframe to aiven.
-# TODO: come back and clean up code after refactoring functions for these changes. 
-
-# def load_csv_to_database(csv_path, sql_engine, target_table):
-#     #Using a whitelist system to discourage sql injections
-#     ALLOWED_TABLES = ["parcel_sales_staging"] #Update this before attempting to load to other tables
-
-#     if target_table not in ALLOWED_TABLES:
-#         raise ValueError(f"Invalid table name: {target_table}")
-
-#     log.info(f"Attempting to load {csv_path} to Aiven DB at {target_table}")
-
-#     engine = sql_engine
-
-#     df = pd.read_csv(csv_path)
-#     print(len(df.index))
-#     df = df.reset_index(drop=True)  # ensures clean 0-based integer index
-#     print(f"DF Index: {df.index}") # should show RangeIndex(start=0, stop=N, step=1)
-    
-#     df.to_sql(
-#         name=target_table,
-#         con=engine,
-#         if_exists="replace", #TODO: come back and modify this when there is a go forward data refresh plan
-#         index=True,
-#         index_label="id",
-#         chunksize=1000,
-#         dtype={'id': 'INTEGER PRIMARY KEY AUTOINCREMENT'}
-#         #dtype={"id": INTEGER(unsigned=True)}
-#     )
-#     log.info(f"Successfully loaded csv to {target_table}.")
-
-#     with engine.connect() as conn:
-#         result = conn.execute(sa.text(f"SELECT * FROM {target_table} LIMIT 5"))
-#         print(result)
-
 #----------------------------------------
 # Getting the clean DF
 #----------------------------------------
