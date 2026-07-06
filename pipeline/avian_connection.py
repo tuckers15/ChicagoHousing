@@ -24,7 +24,12 @@ SECRETS_PATH = Path("secrets/avian_creds.json")
 
 TARGET_TABLE = "parcel_sales_staging"
 
+DROP_TABLE_SQL = f"""
+DROP TABLE IF EXISTS {TARGET_TABLE};
+"""
+
 CREATE_TABLE_SQL = f"""
+
 CREATE TABLE IF NOT EXISTS {TARGET_TABLE} (
     id                              INT AUTO_INCREMENT PRIMARY KEY,
  
@@ -46,7 +51,7 @@ CREATE TABLE IF NOT EXISTS {TARGET_TABLE} (
     -- Document / deed info
     doc_no                          VARCHAR(50),
     deed_type                       VARCHAR(10),
-    mydec_deed_type                 VARCHAR(10),
+    mydec_deed_type                 VARCHAR(100),
  
     -- Multi-sale info
     is_multisale                    TINYINT(1),
@@ -74,14 +79,17 @@ CREATE TABLE IF NOT EXISTS {TARGET_TABLE} (
     INDEX idx_township              (township_code)
 )
 """
+DROP_COLUMNS = ["seller_name", "buyer_name"]
 
 #------------------------------------------------------
 # Helper functions
 #------------------------------------------------------
 
 def create_table(engine, target_table):
-    log.info(f"Creating table '{target_table}' if it does not exist...")
     with engine.connect() as conn:
+        log.info(f"Dropping table '{target_table}' if it exist...")
+        conn.execute(sa.text(DROP_TABLE_SQL))
+        log.info(f"Creating table '{target_table}'")
         conn.execute(sa.text(CREATE_TABLE_SQL))
         conn.commit()
     log.info("Table ready.")
@@ -219,13 +227,16 @@ def load_csv(path: str) -> pd.DataFrame:
     df["township_code"]   = pd.to_numeric(df["township_code"],   errors="coerce").astype("Int8")
     df["num_parcels_sale"]= pd.to_numeric(df["num_parcels_sale"],errors="coerce").astype("Int16")
  
+    log.info(f"  Final shape: {df.shape[0]:,} rows × {df.shape[1]} columns")
+    log.info(f"  Columns to insert: {list(df.columns)}")
+    return df
 
 #------------------------------------
 # Loading the DF to MySql DB on Aiven
 #------------------------------------
 
 def insert_data(df: pd.DataFrame, engine):
-    log.info(f"Inserting {len(df.index):,} rows into '{TARGET_TABLE}'...")
+    log.info(f"Inserting {len(df):,} rows into '{TARGET_TABLE}'...")
     df.to_sql(
         name=TARGET_TABLE,
         con=engine,
@@ -255,6 +266,7 @@ def main():
 
     df = load_csv(path="data/joined_parcel_data.csv")
     insert_data(df, engine)
+    verify_load(engine)
     
 
 main()
