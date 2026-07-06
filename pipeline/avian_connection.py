@@ -224,10 +224,22 @@ def load_csv(path: str) -> pd.DataFrame:
 # Loading the DF to MySql DB on Aiven
 #------------------------------------
 
+def insert_data(df: pd.DataFrame, engine):
+    log.info(f"Inserting {len(df.index):,} rows into '{TARGET_TABLE}'...")
+    df.to_sql(
+        name=TARGET_TABLE,
+        con=engine,
+        if_exists="append",   # TODO: come back and modify/verify this when there is a go forward data refresh plan
+        index=False,          # id is AUTO_INCREMENT in the table, don't write df index
+        chunksize=1000,
+    )
+    log.info("Insert complete.")
 
-  
-
-
+def verify_load(engine):
+    with engine.connect() as conn:
+        result = conn.execute(sa.text(f"SELECT * FROM {TARGET_TABLE} LIMIT 5"))
+        for row in result:
+            log.info(f" {row}")
 
 def main():
     # Get the aiven connection variables
@@ -241,7 +253,8 @@ def main():
     engine = establish_connection(database=database, host=host, password=password, user=user)
     create_table(engine, TARGET_TABLE)
 
-
-    #load_csv_to_database(csv_path="data/joined_parcel_data.csv", sql_engine=engine, target_table="parcel_sales_staging" )
+    df = load_csv(path="data/joined_parcel_data.csv")
+    insert_data(df, engine)
+    
 
 main()
