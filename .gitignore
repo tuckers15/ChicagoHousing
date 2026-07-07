@@ -1,3 +1,6 @@
+#Aiven cert
+ca.pem
+
 #ignoring large csvs
 /data
 

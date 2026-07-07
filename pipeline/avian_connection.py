@@ -129,7 +129,8 @@ def establish_connection(database, host, password, user, port=15969):
     encoded_password = quote(password, safe='')
     
     engine = sa.create_engine(
-        f"mysql+pymysql://{encoded_user}:{encoded_password}@{host}:{port}/{database}"
+        f"mysql+pymysql://{encoded_user}:{encoded_password}@{host}:{port}/{database}",
+        connect_args={"ssl": {"ssl_ca": "path/to/ca.pem"}}
     )
 
     return engine
